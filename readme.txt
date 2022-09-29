@@ -1,58 +1,19 @@
-SUMMARY: Dataset of references (urls) to news web pages
+From the AI perspective, the main goal was to create a machine learning model which was able to generate cover letters undistinguished from a human-written one. After reviewing different NLG approaches using a pretrained model was selected as the most efficient approach.
 
-DESCRIPTION: Dataset of references to news web pages collected from an online aggregator in the period from March 10 to August 10 of 2014. The resources are grouped into clusters that represent pages discussing the same news story. The dataset includes also references to web pages that point (has a link to) one of the news page in the collection.
+The first training of the small 124-M parameters GPT-2 model with the dataset of collected cover letters generated very impressive results (loss=0.19, avg=0.64, 1500 steps): the newly trained model was able to create the text on a very high qualitative level, but the content was not relevant to the candidate skills and job title. For the model training, adjustments were made to the gpt-2-simple framework from Max Woolf. [1]
 
-TAGS: web pages, news, aggregator, classification, clustering
+To get more control over the model output the training dataset was modified with skills extracted from cover letters and job titles. This approach was created using information from an article by Ivan Lai. [2]
 
-LICENSE: Public domain - Due to restrictions on content and use of the news sources, the corpus is limited to web references (urls) to web pages and does not include any text content. The references have been retrieved from the news aggregator through traditional web browsers. 
+It was a challenge to find a suitable model for extracting skills from resumes, but after some experiments with different NLP frameworks (BERT, TFIDF), SpaCy Named Entity Recognition model (en_core_web_sm) was selected for custom skills labeling. The skills dataset modified was found in a Microsoft repository on Github. [3]
 
-FILE ENCODING: UTF-8
+The named entity recognition model (NER model) added new skills into the training dataset skills as well as job titles. The retrained GPT-2 based model was able to create a cover letter by being prompted with a set of skills, job title, or combination of both. The results were relevant to provided prompts.
 
-FORMAT: Tab delimited CSV files. 
+Optimal results were achieved by using the minimal numbers of skills as a prompt – two or three, with a high probability those skills were recognized and implemented in the generated GPT-2 text. The model was not capable of working with a bigger number of elements for proper prediction, probably due to the small size of the training dataset. Sufficient data was provided to the training set after these results, eventually reducing the number of "off topic" sentences in the resulting cover letters.
 
-DATA SHAPE AND STATS: 422937 news pages and divided up into:
+Both Models (cover letter generation and skill extraction) were set as API services (FastAPI) and containerized(Docker) to be deployed onto AWS to be usable for purposes such as web development.
 
-152746 	news of business category
-108465 	news of science and technology category
-115920 	news of business category
- 45615 	news of health category
+[1] https://github.com/minimaxir/gpt-2-simple
 
-2076 clusters of similar news for entertainment category
-1789 clusters of similar news for science and technology category
-2019 clusters of similar news for business category
-1347 clusters of similar news for health category
+[2] https://www.ivanlai.project-ds.net/post/conditional-text-generation-by-fine-tuning-gpt-2
 
-References to web pages containing a link to one news included in the collection are also included. They are represented as pairs of urls corresponding to 2-page browsing sessions. The collection includes 15516 2-page browsing sessions covering 946 distinct clusters divided up into:
-
-6091 2-page sessions for business category
-9425 2-page sessions for entertainment category
-
- 
-
-CONTENT
-=======
-
-FILENAME #1: newsCorpora.csv (102.297.000 bytes)
-DESCRIPTION: News pages
-FORMAT: ID \t TITLE \t URL \t PUBLISHER \t CATEGORY \t STORY \t HOSTNAME \t TIMESTAMP
-
-where:
-ID		Numeric ID
-TITLE		News title 
-URL		Url
-PUBLISHER	Publisher name
-CATEGORY	News category (b = business, t = science and technology, e = entertainment, m = health)
-STORY		Alphanumeric ID of the cluster that includes news about the same story
-HOSTNAME	Url hostname
-TIMESTAMP 	Approximate time the news was published, as the number of milliseconds since the epoch 00:00:00 GMT, January 1, 1970
-
-
-FILENAME #2: 2pageSessions.csv (3.049.986 bytes)
-DESCRIPTION: 2-page sessions
-FORMAT: STORY \t HOSTNAME \t CATEGORY \t URL
-
-where:
-STORY		Alphanumeric ID of the cluster that includes news about the same story
-HOSTNAME	Url hostname
-CATEGORY	News category (b = business, t = science and technology, e = entertainment, m = health)
-URL		Two space-delimited urls representing a browsing session
+[3] https://github.com/microsoft/SkillsExtractorCognitiveSearch/blob/master/data/skill_patterns.jsonl
