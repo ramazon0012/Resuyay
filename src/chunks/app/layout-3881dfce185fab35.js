@@ -110,7 +110,7 @@
         u = t(7042),
         x = t(8593),
         m = {
-          src: "/_next/static/media/avatar.51a13c67.jpg",
+          src: "src/media/1680913841_kartinki-pibig-info-p-kartinki-geografiya-dlya-prezentatsii-arti-26.jpg",
           height: 512,
           width: 512,
           blurDataURL:
